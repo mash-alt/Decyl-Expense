@@ -5,6 +5,8 @@ import type { View, ExpenseRow, ExpenseDraft, ExpenseField, BudgetSettings } fro
 import { addExpense, updateExpense, deleteExpense, subscribeToExpenses } from './services/expenseService.ts'
 import { saveBudgetSettings, subscribeToMonthlyBudget } from './services/budgetService.ts'
 import { getAiInsight, getDailySuggestion, type DailySuggestionResult } from './services/aiService.ts'
+import { useAuth } from './contexts/AuthContext.tsx'
+import AuthPage from './pages/AuthPage.tsx'
 import DashboardPage from './pages/DashboardPage.tsx'
 import ExpensesPage from './pages/ExpensesPage.tsx'
 import InsightsPage from './pages/InsightsPage.tsx'
@@ -12,7 +14,11 @@ import BudgetPage from './pages/BudgetPage.tsx'
 import SettingsPage from './pages/SettingsPage.tsx'
 import AssistantPanel from './components/AssistantPanel.tsx'
 
-function App() {
+import type { User } from 'firebase/auth'
+
+function AppShell({ user }: { user: User }) {
+  const { signOut } = useAuth()
+  const uid = user.uid
   const [activeView, setActiveView] = useState<View>('dashboard')
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false)
@@ -28,6 +34,7 @@ function App() {
     setIsLoadingExpenses(true)
 
     const unsubscribe = subscribeToExpenses(
+      uid,
       items => {
         setRows(items.map(item => ({
           id:          item.id,
@@ -48,6 +55,7 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = subscribeToMonthlyBudget(
+      uid,
       data => {
         setMonthlyBudget(data?.monthlyBudget    ?? 0)
         setSavingsGoal(  data?.savingsGoal      ?? 0)
@@ -65,11 +73,11 @@ function App() {
     setSavingsGoal(settings.savingsGoal)
     setCategoryLimits(settings.categoryLimits)
     setCustomCategories(settings.customCategories)
-    await saveBudgetSettings(settings)
+    await saveBudgetSettings(uid, settings)
   }
 
   const handleAddExpense = async (draft: ExpenseDraft): Promise<string> => {
-    const data = await addExpense({
+    const data = await addExpense(uid, {
       description: draft.description.trim() || 'New expense',
       category:    draft.category,
       amount:      parseAmount(draft.amount),
@@ -105,10 +113,10 @@ function App() {
       }),
     )
     try {
-      if      (field === 'amount')      await updateExpense(id, { amount:      parseAmount(rawValue) })
-      else if (field === 'date')        await updateExpense(id, { date:        new Date(rawValue)    })
-      else if (field === 'description') await updateExpense(id, { description: rawValue             })
-      else if (field === 'category')    await updateExpense(id, { category:    rawValue             })
+      if      (field === 'amount')      await updateExpense(uid, id, { amount:      parseAmount(rawValue) })
+      else if (field === 'date')        await updateExpense(uid, id, { date:        new Date(rawValue)    })
+      else if (field === 'description') await updateExpense(uid, id, { description: rawValue             })
+      else if (field === 'category')    await updateExpense(uid, id, { category:    rawValue             })
     } catch (error) {
       console.error('[Expenses] Failed to update:', error)
     }
@@ -117,7 +125,7 @@ function App() {
   const handleDeleteExpense = async (id: string): Promise<void> => {
     setRows(current => current.filter(row => row.id !== id)) // optimistic
     try {
-      await deleteExpense(id)
+      await deleteExpense(uid, id)
     } catch (error) {
       console.error('[Expenses] Failed to delete:', error)
     }
@@ -321,6 +329,16 @@ function App() {
             </>
           )}
         </div>
+        <div className="sidebar-footer">
+          <p className="sidebar-user-email">{user.email ?? 'Signed in'}</p>
+          <button
+            type="button"
+            className="secondary-button compact signout-button"
+            onClick={() => void signOut()}
+          >
+            Sign out
+          </button>
+        </div>
       </aside>
 
       <main className="main-column">
@@ -458,6 +476,23 @@ function App() {
       ) : null}
     </div>
   )
+}
+
+function App() {
+  const { user, isAuthLoading } = useAuth()
+
+  if (isAuthLoading) {
+    return (
+      <div className="auth-loading">
+        <div className="auth-loading-spinner" />
+        <span>Loading…</span>
+      </div>
+    )
+  }
+
+  if (!user) return <AuthPage />
+
+  return <AppShell user={user} />
 }
 
 export default App

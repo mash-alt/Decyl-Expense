@@ -1,6 +1,7 @@
 @import './variables.css';
 @import './animations.css';
 @import './layout.css';
+@import './auth.css';
 @import './dashboard.css';
 @import './expenses.css';
 @import './insights.css';

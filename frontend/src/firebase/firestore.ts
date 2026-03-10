@@ -15,28 +15,18 @@ import type {
 // ─── Collection References ────────────────────────────────────────────────────
 
 /**
- * Typed reference to the `expenses` Firestore collection.
- * Pass directly to `addDoc`, `getDocs`, `onSnapshot`, `query`, etc.
- *
- * @example
- * const snap = await getDocs(expensesCollection)
+ * Returns a typed reference to `users/{uid}/expenses`.
+ * Every user has their own isolated expenses sub-collection.
  */
-export const expensesCollection = collection(
-  db,
-  'expenses',
-) as CollectionReference<ExpenseDocument>
+export const getUserExpensesCollection = (uid: string) =>
+  collection(db, 'users', uid, 'expenses') as CollectionReference<ExpenseDocument>
 
 /**
- * Typed reference to the `budgets` Firestore collection.
- * Pass directly to `addDoc`, `getDocs`, `onSnapshot`, `query`, etc.
- *
- * @example
- * const snap = await getDocs(budgetsCollection)
+ * Returns a typed reference to `users/{uid}/budgets`.
+ * Every user has their own isolated budgets sub-collection.
  */
-export const budgetsCollection = collection(
-  db,
-  'budgets',
-) as CollectionReference<BudgetDocument>
+export const getUserBudgetsCollection = (uid: string) =>
+  collection(db, 'users', uid, 'budgets') as CollectionReference<BudgetDocument>
 
 // ─── Timestamp Utilities ──────────────────────────────────────────────────────
 

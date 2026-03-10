@@ -6,8 +6,8 @@ import {
   Timestamp,
 } from 'firebase/firestore'
 import {
-  budgetsCollection,
   buildBudgetPayload,
+  getUserBudgetsCollection,
 } from '../firebase/firestore.ts'
 
 // ─── Public Types ─────────────────────────────────────────────────────────────
@@ -61,14 +61,15 @@ function parseBudgetData(id: string, data: Record<string, unknown>): BudgetData 
  *
  * @param settings  Full budget settings to persist.
  */
-export async function saveBudgetSettings(settings: {
+export async function saveBudgetSettings(uid: string, settings: {
   monthlyBudget:    number
   savingsGoal:      number
   categoryLimits:   Record<string, number>
   customCategories: string[]
 }): Promise<BudgetData> {
   try {
-    const docRef  = doc(budgetsCollection, BUDGET_DOC_ID)
+    const col     = getUserBudgetsCollection(uid)
+    const docRef  = doc(col, BUDGET_DOC_ID)
     const payload = buildBudgetPayload(settings)
     await setDoc(docRef, payload)
 
@@ -90,9 +91,10 @@ export async function saveBudgetSettings(settings: {
  *
  * @returns `BudgetData` if a budget has been set, or `null` if none exists yet.
  */
-export async function getMonthlyBudget(): Promise<BudgetData | null> {
+export async function getMonthlyBudget(uid: string): Promise<BudgetData | null> {
   try {
-    const docRef = doc(budgetsCollection, BUDGET_DOC_ID)
+    const col    = getUserBudgetsCollection(uid)
+    const docRef = doc(col, BUDGET_DOC_ID)
     const snap   = await getDoc(docRef)
     if (!snap.exists()) return null
     return parseBudgetData(snap.id, snap.data() as unknown as Record<string, unknown>)
@@ -113,10 +115,12 @@ export async function getMonthlyBudget(): Promise<BudgetData | null> {
  * @returns        Unsubscribe function — call it to detach the listener.
  */
 export function subscribeToMonthlyBudget(
+  uid:      string,
   onData:   (budget: BudgetData | null) => void,
   onError?: (error: Error) => void,
 ): () => void {
-  const docRef = doc(budgetsCollection, BUDGET_DOC_ID)
+  const col    = getUserBudgetsCollection(uid)
+  const docRef = doc(col, BUDGET_DOC_ID)
 
   return onSnapshot(
     docRef,

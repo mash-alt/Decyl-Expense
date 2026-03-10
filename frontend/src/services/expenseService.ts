@@ -10,8 +10,8 @@ import {
   Timestamp,
 } from 'firebase/firestore'
 import {
-  expensesCollection,
   buildExpensePayload,
+  getUserExpensesCollection,
 } from '../firebase/firestore.ts'
 
 // ─── Public Types ─────────────────────────────────────────────────────────────
@@ -85,10 +85,11 @@ function toExpenseData(
  *          is authoritative and will be returned on the next `getExpenses()`.
  * @throws  Re-throws Firestore errors with a descriptive message.
  */
-export async function addExpense(expense: AddExpenseInput): Promise<ExpenseData> {
+export async function addExpense(uid: string, expense: AddExpenseInput): Promise<ExpenseData> {
   try {
+    const col     = getUserExpensesCollection(uid)
     const payload = buildExpensePayload(expense)
-    const docRef  = await addDoc(expensesCollection, payload)
+    const docRef  = await addDoc(col, payload)
 
     return {
       id:          docRef.id,
@@ -110,9 +111,10 @@ export async function addExpense(expense: AddExpenseInput): Promise<ExpenseData>
  *          collection is empty.
  * @throws  Re-throws Firestore errors with a descriptive message.
  */
-export async function getExpenses(): Promise<ExpenseData[]> {
+export async function getExpenses(uid: string): Promise<ExpenseData[]> {
   try {
-    const q    = query(expensesCollection, orderBy('date', 'desc'))
+    const col  = getUserExpensesCollection(uid)
+    const q    = query(col, orderBy('date', 'desc'))
     const snap = await getDocs(q)
 
     return snap.docs.map(docSnap =>
@@ -143,10 +145,12 @@ export async function getExpenses(): Promise<ExpenseData[]> {
  * unsubscribe()
  */
 export function subscribeToExpenses(
+  uid:      string,
   onData:   (expenses: ExpenseData[]) => void,
   onError?: (error: Error) => void,
 ): () => void {
-  const q = query(expensesCollection, orderBy('date', 'desc'))
+  const col = getUserExpensesCollection(uid)
+  const q   = query(col, orderBy('date', 'desc'))
 
   return onSnapshot(
     q,
@@ -172,13 +176,15 @@ export function subscribeToExpenses(
  * @throws Re-throws Firestore errors with a descriptive message.
  */
 export async function updateExpense(
+  uid:         string,
   id:          string,
   updatedData: UpdateExpenseInput,
 ): Promise<void> {
   try {
     if (Object.keys(updatedData).length === 0) return
 
-    const docRef = doc(expensesCollection, id)
+    const col    = getUserExpensesCollection(uid)
+    const docRef = doc(col, id)
 
     // Build a typed patch — only include keys that were actually supplied
     const patch: {
@@ -205,9 +211,10 @@ export async function updateExpense(
  * @param id Firestore document ID of the expense to delete.
  * @throws   Re-throws Firestore errors with a descriptive message.
  */
-export async function deleteExpense(id: string): Promise<void> {
+export async function deleteExpense(uid: string, id: string): Promise<void> {
   try {
-    await deleteDoc(doc(expensesCollection, id))
+    const col = getUserExpensesCollection(uid)
+    await deleteDoc(doc(col, id))
   } catch (error) {
     throw new Error(`deleteExpense failed: ${(error as Error).message}`)
   }
