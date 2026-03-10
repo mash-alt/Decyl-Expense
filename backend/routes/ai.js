@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { parseExpenseMessage, generateBudgetInsight, generateChatReply, generateDailySuggestion } = require('../services/geminiService');
 const { db } = require('../firebase/firebaseAdmin');
+const authenticate = require('../middleware/authenticate');
+
+// All AI routes require a valid Firebase ID token
+router.use(authenticate);
 
 // POST /api/ai/expense
 router.post('/expense', async (req, res) => {
@@ -23,10 +27,10 @@ router.post('/expense', async (req, res) => {
       });
     }
 
-    // 2. Save each expense to Firestore
+    // 2. Save each expense to the authenticated user's sub-collection
     const now = new Date();
     const batch = db.batch();
-    const collectionRef = db.collection('expenses');
+    const collectionRef = db.collection('users').doc(req.uid).collection('expenses');
     const savedExpenses = [];
 
     for (const expense of parsedExpenses) {
@@ -94,7 +98,7 @@ router.post('/chat', async (req, res) => {
 
     // 1. Fetch expenses from this month ordered by date descending
     const snapshot = await db
-      .collection('expenses')
+      .collection('users').doc(req.uid).collection('expenses')
       .where('createdAt', '>=', firstOfMonth)
       .orderBy('createdAt', 'desc')
       .limit(50)
@@ -154,7 +158,7 @@ router.get('/daily-suggestion', async (req, res) => {
 
     // Fetch all expenses from this month
     const snapshot = await db
-      .collection('expenses')
+      .collection('users').doc(req.uid).collection('expenses')
       .where('createdAt', '>=', firstOfMonth)
       .orderBy('createdAt', 'desc')
       .limit(100)

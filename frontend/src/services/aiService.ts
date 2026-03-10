@@ -1,3 +1,5 @@
+import { auth } from '../firebase/firebaseConfig'
+
 const API_BASE = 'https://decyl-expense.onrender.com/api'
 
 // ─── Public Types ─────────────────────────────────────────────────────────────
@@ -31,8 +33,12 @@ export type AiInsightResult = {
 // ─── Internal fetch helper ────────────────────────────────────────────────────
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  // Attach Firebase ID token when the user is signed in
+  const token = await auth.currentUser?.getIdToken()
+  const authHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    headers: { 'Content-Type': 'application/json', ...authHeader, ...(init?.headers ?? {}) },
     ...init,
   })
   if (!res.ok) throw new Error(`[AI API] ${path} → ${res.status} ${res.statusText}`)
