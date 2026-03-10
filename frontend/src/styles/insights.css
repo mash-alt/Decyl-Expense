@@ -1,0 +1,140 @@
+.insights-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* ── Bar chart ──────────────────────────────────────────────────────────── */
+.bar-chart {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: end;
+  gap: 0.8rem;
+  min-height: 220px;
+  margin-top: 1.2rem;
+}
+
+.bar-column {
+  display: grid;
+  justify-items: center;
+  gap: 0.6rem;
+}
+
+.bar-fill {
+  width: 100%;
+  max-width: 2.2rem;
+  min-height: 2.5rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+  animation: rise-in 450ms ease;
+}
+
+.chart-footnote {
+  margin: 1rem 0 0;
+  color: var(--text-muted);
+}
+
+/* ── Line chart ─────────────────────────────────────────────────────────── */
+.line-chart {
+  position: relative;
+  overflow: hidden;
+  min-height: 240px;
+  margin: 1rem 0;
+  border-radius: 24px;
+  background:
+    linear-gradient(rgba(226, 232, 240, 0.6) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(226, 232, 240, 0.52) 1px, transparent 1px);
+  background-size: 100% 25%, 16.66% 100%;
+}
+
+.line {
+  position: absolute;
+  inset: auto 0 0;
+  height: 100%;
+}
+
+.line::before {
+  content: '';
+  position: absolute;
+  inset: 20% 8% 18% 8%;
+  border-radius: 999px;
+  mask: linear-gradient(#000 0 0);
+}
+
+.line.ideal::before {
+  border-top: 3px dashed rgba(124, 139, 161, 0.7);
+  transform: skewY(-8deg) translateY(1.25rem);
+}
+
+.line.actual::before {
+  border-top: 4px solid var(--accent-strong);
+  transform: skewY(-12deg) translateY(2.8rem);
+}
+
+/* ── Category ring (insights variant) ──────────────────────────────────── */
+.compact-legend .legend-row {
+  padding: 0.75rem 0.9rem;
+}
+
+.insights-ring {
+  width: min(100%, 210px);
+}
+
+/* ── Line legend ────────────────────────────────────────────────────────── */
+.line-legend {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.8rem;
+  color: var(--text-soft);
+  font-size: 0.84rem;
+}
+
+.line-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.legend-line {
+  display: inline-block;
+  width: 1.6rem;
+  height: 0;
+  border-top: 3px solid currentColor;
+}
+
+.legend-line.ideal {
+  color: rgba(124, 139, 161, 0.82);
+  border-top-style: dashed;
+}
+
+.legend-line.actual {
+  color: var(--accent-strong);
+}
+
+/* ── AI insight panel ───────────────────────────────────────────────────── */
+.budget-graph-card,
+.ai-insight-card {
+  min-height: 100%;
+}
+
+.insight-points {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.insight-point {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.9rem 1rem;
+  border-radius: 18px;
+  background: rgba(248, 250, 252, 0.78);
+}
+
+.insight-point strong {
+  color: var(--text-strong);
+}
+
+.insight-point span {
+  color: var(--text-muted);
+}

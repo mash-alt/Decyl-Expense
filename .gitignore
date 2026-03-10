@@ -1,0 +1,41 @@
+# ── Dependencies ────────────────────────────────────────────────────────────
+node_modules/
+
+# ── Build output ─────────────────────────────────────────────────────────────
+dist/
+dist-ssr/
+
+# ── Vite cache ───────────────────────────────────────────────────────────────
+.vite/
+
+# ── Environment variables ────────────────────────────────────────────────────
+# Copy frontend/.env.example → frontend/.env and fill in values. Never commit .env
+.env
+.env.local
+.env.*.local
+*.local
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+firebase-debug.log*
+
+# ── Firebase cache ───────────────────────────────────────────────────────────
+.firebase/
+
+# ── OS / editor artifacts ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vscode/*
+!.vscode/extensions.json
