@@ -3,8 +3,8 @@ import { navigation, expenseCategories } from './constants.ts'
 import { createExpenseDraft, formatAmount, parseAmount } from './utils.ts'
 import type { View, ExpenseRow, ExpenseDraft, ExpenseField, BudgetSettings } from './types.ts'
 import { addExpense, updateExpense, deleteExpense, subscribeToExpenses } from './services/expenseService.ts'
-import { saveBudgetSettings, subscribeToMonthlyBudget } from './services/budgetService.ts'
-import { getAiInsight, getDailySuggestion, type DailySuggestionResult } from './services/aiService.ts'
+import { subscribeToMonthlyBudget } from './services/budgetService.ts'
+import { getAiInsight, getDailySuggestion, saveBudget, type DailySuggestionResult } from './services/aiService.ts'
 import { useAuth } from './contexts/AuthContext.tsx'
 import AuthPage from './pages/AuthPage.tsx'
 import DashboardPage from './pages/DashboardPage.tsx'
@@ -73,7 +73,8 @@ function AppShell({ user }: { user: User }) {
     setSavingsGoal(settings.savingsGoal)
     setCategoryLimits(settings.categoryLimits)
     setCustomCategories(settings.customCategories)
-    await saveBudgetSettings(uid, settings)
+    // Save through the backend API — verifies auth token + writes to users/{uid}/budgets/current
+    await saveBudget(settings)
   }
 
   const handleAddExpense = async (draft: ExpenseDraft): Promise<string> => {

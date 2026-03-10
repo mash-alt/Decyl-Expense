@@ -126,6 +126,24 @@ export type DailySuggestionResult = {
   percentOfBudgetUsed: number
 }
 
+// ─── Budget Types ─────────────────────────────────────────────────────────────
+
+export type BudgetApiSettings = {
+  monthlyBudget:    number
+  savingsGoal:      number
+  categoryLimits:   Record<string, number>
+  customCategories: string[]
+}
+
+export type BudgetApiResult = {
+  id:               string
+  monthlyBudget:    number
+  savingsGoal:      number
+  categoryLimits:   Record<string, number>
+  customCategories: string[]
+  createdAt:        string | null
+}
+
 /**
  * Fetches a personalised daily spending suggestion from GET /api/ai/daily-suggestion.
  * Returns null silently on any error (server offline, no budget set, etc.).
@@ -144,4 +162,34 @@ export async function getDailySuggestion(
   } catch {
     return null
   }
+}
+
+// ─── Budget API ───────────────────────────────────────────────────────────────
+
+/**
+ * Fetches the authenticated user's current budget settings from the backend.
+ * Returns null silently if no budget has been saved yet or on any error.
+ */
+export async function getBudget(): Promise<BudgetApiResult | null> {
+  try {
+    const data = await apiFetch<{ budget: BudgetApiResult | null }>('/budgets')
+    return data.budget
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Creates or fully replaces the authenticated user's budget settings via the backend.
+ * Writes to users/{uid}/budgets/current in Firestore — the real-time subscription
+ * in the frontend will pick up the change automatically.
+ *
+ * @throws Re-throws network / non-2xx errors so callers can show an error state.
+ */
+export async function saveBudget(settings: BudgetApiSettings): Promise<BudgetApiResult> {
+  const data = await apiFetch<{ budget: BudgetApiResult }>(
+    '/budgets/save',
+    { method: 'POST', body: JSON.stringify(settings) },
+  )
+  return data.budget
 }
