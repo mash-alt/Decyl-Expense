@@ -318,4 +318,66 @@ Rules:
   }
 }
 
-module.exports = { parseExpenseMessage, generateBudgetInsight, generateChatReply, generateDailySuggestion };
+module.exports = { parseExpenseMessage, generateBudgetInsight, generateChatReply, generateDailySuggestion, detectChatAction };
+
+/**
+ * Classifies a chat message as either a data-modification ACTION or a
+ * plain QUESTION/CONVERSATION.
+ *
+ * Supported actions:
+ *   - add_to_budget    { amount: number }
+ *   - set_budget       { amount: number }
+ *   - set_savings_goal { amount: number }
+ *   - add_expense      { description, category, amount }
+ *
+ * @param {string} message - The raw user message.
+ * @returns {Promise<{ action: string|null, params?: object }>}
+ */
+async function detectChatAction(message) {
+  const prompt = `
+You are an action classifier for a personal expense tracker app.
+Analyze the user's message and decide if it is a DATA MODIFICATION request.
+
+User message: "${message}"
+
+Supported actions and their JSON shape:
+1. add_to_budget   — increase the monthly budget by an amount
+   Example: "add 2000 to my budget", "increase budget by 500"
+   Return: {"action":"add_to_budget","params":{"amount":2000}}
+
+2. set_budget      — set the monthly budget to a specific amount
+   Example: "set my budget to 5000", "change budget to 3000"
+   Return: {"action":"set_budget","params":{"amount":5000}}
+
+3. set_savings_goal — set the savings goal
+   Example: "set savings goal to 1000", "I want to save 800 a month"
+   Return: {"action":"set_savings_goal","params":{"amount":1000}}
+
+4. add_expense     — record a new expense
+   Example: "I spent 200 on lunch", "add 500 for transport"
+   Category must be one of: food, transport, shopping, utilities, health, entertainment, other
+   Return: {"action":"add_expense","params":{"description":"lunch","category":"food","amount":200}}
+
+If the message is a QUESTION, analysis request, or general chat — NOT a modification:
+   Return: {"action":null}
+
+Rules:
+- Return ONLY raw JSON. No markdown, no code fences, no explanation.
+- Only classify as an action if you are highly confident the user wants to MODIFY data.
+- If an amount is unclear or missing, return {"action":null}.
+`;
+
+  let rawText = '';
+  try {
+    const result = await model.generateContent(prompt);
+    rawText = result.response.text().trim()
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
+    const parsed = JSON.parse(rawText);
+    return parsed && typeof parsed === 'object' ? parsed : { action: null };
+  } catch {
+    return { action: null };
+  }
+}

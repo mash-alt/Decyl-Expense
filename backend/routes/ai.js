@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { parseExpenseMessage, generateBudgetInsight, generateChatReply, generateDailySuggestion } = require('../services/geminiService');
+const { parseExpenseMessage, generateBudgetInsight, generateChatReply, generateDailySuggestion, detectChatAction } = require('../services/geminiService');
 const { db } = require('../firebase/firebaseAdmin');
 const authenticate = require('../middleware/authenticate');
 
@@ -91,12 +91,67 @@ router.post('/chat', async (req, res) => {
   }
 
   try {
+    // ── Step 1: Detect if the user is requesting a data modification ──────────
+    const { action, params } = await detectChatAction(message.trim());
+
+    if (action === 'add_to_budget' || action === 'set_budget') {
+      const budgetRef = db.collection('users').doc(req.uid).collection('budgets').doc('current');
+      const snap = await budgetRef.get();
+      const current = snap.exists ? snap.data() : {};
+      const currentBudget = current.monthlyBudget ?? 0;
+      const newBudget = action === 'add_to_budget'
+        ? currentBudget + params.amount
+        : params.amount;
+
+      await budgetRef.set({ ...current, monthlyBudget: newBudget, createdAt: new Date() });
+
+      const reply = action === 'add_to_budget'
+        ? `Done! I added ₱${params.amount.toLocaleString()} to your budget. Your monthly budget is now ₱${newBudget.toLocaleString()}.`
+        : `Done! Your monthly budget has been set to ₱${newBudget.toLocaleString()}.`;
+
+      return res.status(200).json({
+        reply,
+        actionExecuted: { type: action, newMonthlyBudget: newBudget },
+      });
+    }
+
+    if (action === 'set_savings_goal') {
+      const budgetRef = db.collection('users').doc(req.uid).collection('budgets').doc('current');
+      const snap = await budgetRef.get();
+      const current = snap.exists ? snap.data() : {};
+
+      await budgetRef.set({ ...current, savingsGoal: params.amount, createdAt: new Date() });
+
+      return res.status(200).json({
+        reply: `Done! Your savings goal has been set to ₱${params.amount.toLocaleString()}.`,
+        actionExecuted: { type: action, newSavingsGoal: params.amount },
+      });
+    }
+
+    if (action === 'add_expense') {
+      const expenseRef = db.collection('users').doc(req.uid).collection('expenses').doc();
+      const now = new Date();
+      const expenseDoc = {
+        description: params.description,
+        category:    params.category,
+        amount:      params.amount,
+        date:        now.toISOString().split('T')[0],
+        createdAt:   now,
+      };
+      await expenseRef.set(expenseDoc);
+
+      return res.status(200).json({
+        reply: `Done! I've recorded a ₱${params.amount.toLocaleString()} ${params.category} expense for "${params.description}".`,
+        actionExecuted: { type: action, expense: { id: expenseRef.id, ...expenseDoc, createdAt: now.toISOString() } },
+      });
+    }
+
+    // ── Step 2: No action detected — normal conversational reply ──────────────
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const firstOfMonth = new Date();
     firstOfMonth.setDate(1);
     firstOfMonth.setHours(0, 0, 0, 0);
 
-    // 1. Fetch expenses from this month ordered by date descending
     const snapshot = await db
       .collection('users').doc(req.uid).collection('expenses')
       .where('createdAt', '>=', firstOfMonth)
@@ -110,12 +165,10 @@ router.post('/chat', async (req, res) => {
       createdAt: doc.data().createdAt?.toDate?.().toISOString() ?? null,
     }));
 
-    // 2. Compute today's total
     const todayTotal = recentExpenses
       .filter((e) => e.date === today)
       .reduce((sum, e) => sum + (e.amount || 0), 0);
 
-    // 3. Compute monthly total and category breakdown
     const monthlyTotal = recentExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
 
     const categoryTotals = recentExpenses.reduce((acc, e) => {
@@ -124,11 +177,9 @@ router.post('/chat', async (req, res) => {
       return acc;
     }, {});
 
-    // 4. Remaining budget (0 if budget not provided)
     const budget = typeof monthlyBudget === 'number' && monthlyBudget > 0 ? monthlyBudget : 0;
     const remainingBudget = budget > 0 ? budget - monthlyTotal : 0;
 
-    // 5. Ask Gemini
     const reply = await generateChatReply(message.trim(), {
       recentExpenses,
       todayTotal,
