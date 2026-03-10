@@ -1,0 +1,190 @@
+.table-card {
+  padding: 1rem;
+}
+
+.with-wrap {
+  flex-wrap: wrap;
+}
+
+.table-toolbar,
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.table-toolbar {
+  justify-content: space-between;
+}
+
+.table-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.45rem 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(245, 247, 250, 0.92);
+  color: var(--text-soft);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.table-select select {
+  min-width: 8.6rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0.35rem 0.5rem;
+}
+
+.filter-chip.active {
+  color: var(--text-strong);
+  background: rgba(118, 200, 193, 0.18);
+}
+
+/* ── Quick-add inline row ───────────────────────────────────────────────── */
+.quick-add-row {
+  display: grid;
+  gap: 0.8rem;
+  margin: 1.1rem 0;
+  padding: 1rem;
+  border-radius: 22px;
+  background: rgba(249, 250, 251, 0.78);
+}
+
+.quick-add-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.quick-add-inputs,
+.assistant-input {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.quick-add-inputs {
+  grid-template-columns: 1fr 1.6fr 1fr 0.9fr auto;
+}
+
+/* ── Table ──────────────────────────────────────────────────────────────── */
+.table-wrap {
+  overflow-x: auto;
+}
+
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  min-width: 680px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+th,
+td {
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid rgba(203, 213, 225, 0.55);
+  text-align: left;
+}
+
+td {
+  border-right: 1px solid rgba(226, 232, 240, 0.55);
+}
+
+td:last-child,
+th:last-child {
+  border-right: 0;
+}
+
+th {
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(248, 250, 252, 0.85);
+}
+
+.cell-button {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-base);
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.cell-button:hover {
+  background: rgba(118, 200, 193, 0.12);
+}
+
+.cell-button.amount {
+  text-align: right;
+}
+
+.cell-editor {
+  width: 100%;
+  min-height: 2.5rem;
+  border: 1px solid rgba(118, 200, 193, 0.32);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--text-strong);
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+  box-shadow: 0 0 0 3px rgba(118, 200, 193, 0.12);
+}
+
+.cell-editor.amount {
+  text-align: right;
+}
+
+.empty-table-state {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-soft);
+}
+
+/* ── Row actions ─────────────────────────────────────────────────────────── */
+.row-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+  line-height: 1;
+  opacity: 0.45;
+}
+
+tr:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.10);
+  color: #ef4444;
+}
+
+.table-loading {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
