@@ -1,73 +1,95 @@
-# React + TypeScript + Vite
+# Decyl Expense
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Decyl Expense** is a modern expense tracking and budgeting application designed to help users understand, manage, and improve their spending habits.
 
-Currently, two official plugins are available:
+The app combines traditional expense tracking with an AI-powered financial assistant. Users can set their monthly budget and savings goals, record expenses manually, view spending statistics, and receive personalized budgeting suggestions.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## How It Works
 
-## React Compiler
+### 💰 Budget Management
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Users set their:
 
-## Expanding the ESLint configuration
+* Monthly budget
+* Savings goal
+* Spending categories
+* Category spending limits
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The application continuously compares the user's spending against their budget and category limits.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 🧾 Expense Tracking
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Expenses can be added manually through a simple interface similar to a Notion-style database.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Each expense contains:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+* Description
+* Amount
+* Category
+* Date
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Expenses are stored in Firebase and automatically reflected throughout the application.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 📊 Financial Dashboard
+
+The dashboard provides an overview of the user's current financial situation, including:
+
+* Total amount spent
+* Remaining budget
+* Today's spending
+* Category spending
+* Recent expenses
+* Budget progress
+
+### 📈 Insights & Statistics
+
+The app analyzes recorded expenses to visualize spending behavior through charts and statistics.
+
+Users can identify patterns such as:
+
+* Which categories they spend the most on
+* Weekly and monthly spending trends
+* Progress toward their budget
+* Areas where they may be overspending
+
+### 🤖 AI Financial Assistant
+
+The AI assistant allows users to interact with their finances using natural language.
+
+For example:
+
+> "I spent ₱50 on lunch and ₱200 on clothes."
+
+The AI can interpret the message, identify the individual expenses, record them, and update the user's financial balance.
+
+Users can also ask questions such as:
+
+> "How much have I spent today?"
+
+or
+
+> "Am I spending too much on food?"
+
+The assistant uses the user's expense history and budget information to provide contextual responses and recommendations.
+
+### 💡 Personalized Suggestions
+
+Based on the user's budget and spending behavior, the application can provide suggestions such as:
+
+* Recommended daily spending limits
+* Ways to reduce spending
+* Meal suggestions based on the remaining budget
+* Warnings when approaching category limits
+* Budgeting recommendations
+
+## Technology
+
+* **React** — Frontend
+* **Express.js** — Backend API
+* **Firebase Firestore** — Database
+* **Firebase Hosting** — Frontend hosting
+* **Gemini AI** — AI financial assistant
+
+## Goal
+
+Decyl Expense aims to make personal budgeting less tedious by turning expense tracking into an interactive experience where users can **record, understand, and improve their financial habits**.
